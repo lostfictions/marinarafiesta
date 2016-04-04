@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+  <head>
+    <title>marinarafiesta</title>
+    <link href="https://fonts.googleapis.com/css?family=Limelight" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pleasejs/0.2.0/Please.min.js"></script>
+    <style>
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        background-color: #ffff00;
+        transition: background-color 0.3s;
+      }
+
+      #fuckem {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        font-family: 'Limelight', cursive;
+        text-align: center;
+        font-size: 20vh;
+        transition: color 0.3s;
+      }
+
+      #fuckem > div {
+        flex: 250px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="fuckem">
+      <div>
+        <div id="one"></div>
+        <div id="two"></div>
+        <div id="three"></div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      /*eslint no-loop-func:0*/
+      /*global Please*/
+
+      const colors = [
+        'blue',
+        'red',
+        'green',
+        'yellow'
+      ];
+
+      const oneWords = [
+        ["BLOCK", 1],
+        ["IGNORE", 1],
+        ["KILL", 0.3],
+        ["FUCK", 0.3],
+        ["EAT", 0.1],
+        ["ENGAGE", 0.05],
+        ["MARRY", 0.05]
+      ];
+
+      const twoWords = [
+        ["BORING", 1],
+        ["ENTITLED", 1],
+        ["TEDIOUS", 1],
+        ["INTERESTING", 0.2],
+        ["THE", 0.2],
+        ["ALL", 0.2]
+      ];
+      const threeWords = [
+        ["PEOPLE", 1],
+        ["BRANDS", 0.5],
+        ["DEMOGRAPHICS", 0.4],
+        ["TARGET AUDIENCES", 0.3],
+        ["BASICS", 0.3]
+      ];
+
+      const configureWeights = values => {
+        const total = values.reduce((p, c) => p + c[1], 0);
+        for(const v of values) {
+          v[1] = v[1] / total;
+        }
+        values.sort((a, b) => a[1] - b[1]);
+        if(values.length > 1) {
+          for(let i=1; i<values.length; i++) {
+            values[i][1] += values[i-1][1];
+          }
+        }
+      };
+
+      const pickRandom = values => values[Math.floor(Math.random() * values.length)];
+
+      const pickRandomWeighted = values => {
+        const r = Math.random();
+        let i = 0;
+        while(values[i][1] < r) {
+          i++;
+        }
+        return values[i][0];
+      };
+
+      const shuffle = word => {
+        const newWord = [];
+        for(let i=0; i<word.length; i++) {
+          const r = Math.floor(Math.random() * word.length);
+          newWord.push(word[r]);
+        }
+        return newWord.join('');
+      };
+
+      const qs = document.querySelector.bind(document);
+
+      const one = qs('#one');
+      const two = qs('#two');
+      const three = qs('#three');
+
+      const replaceables = new Map();
+      replaceables.set(one, oneWords);
+      replaceables.set(two, twoWords);
+      replaceables.set(three, threeWords);
+
+      for(const v of replaceables.values()) {
+        configureWeights(v);
+      }
+
+      function replaceWords() {
+        const base = Please.make_color({
+          base_color: pickRandom(colors),
+          golden: false,
+          format: 'hsv'
+        });
+
+        const scheme = Please.make_scheme(base, {scheme_type: 'ana'});
+        // document.body.style.backgroundColor = scheme[0];
+        base.v = Math.random() * 0.4;
+        document.body.style.backgroundColor = Please.HSV_to_HEX(base);
+        let i = 1;
+        for(const [key, value] of replaceables.entries()) {
+          const nextText = pickRandomWeighted(value);
+          // const nextText = pickRandom(value.map(v => v[0]));
+          if(key.textContent !== nextText) {
+            const interval = setInterval(() => key.textContent = shuffle(nextText), 50);
+            setTimeout(() => {clearInterval(interval); key.textContent = nextText;}, 300);
+          }
+          key.style.color = scheme[i];
+          i++;
+        }
+
+        setTimeout(replaceWords, 3000);
+      }
+
+      replaceWords();
+    </script>
+  </body>
+</html>
+
+
